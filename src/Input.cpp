@@ -29,13 +29,13 @@ void Input_System::handleBasicInput(bool &quit)
 		{
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
 				SpacePressed = true;			
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return))
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
 				EnterPressed = true;
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::LBracket))
 				LBracketPressed = true;
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::RBracket))
 				RBracketPressed = true;
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::BackSpace))
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Backspace))
 				BackspacePressed = true;
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::B))
 				BPressed = true;
@@ -63,11 +63,11 @@ void Input_System::handleBasicInput(bool &quit)
 		}
 
 		
-		if (event.type == sf::Event::MouseWheelMoved)
+		if (event.type == sf::Event::MouseWheelScrolled)
 		{
-			if (event.mouseWheel.delta > 0)
+			if (event.mouseWheelScroll.delta > 0)
 				ScrolledUp = true;
-			else if (event.mouseWheel.delta < 0)
+			else if (event.mouseWheelScroll.delta < 0)
 				ScrolledDown = true;
 		}
 

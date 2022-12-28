@@ -24,24 +24,16 @@ public:
 	void init(SFML_Wrapper::CoreApplication *TheApp, Game_System &Game);
 	
 	sf::Font font;
-	
-	void Line(sf::Vector2f a, sf::Vector2f b, sf::Color ColorToDraw);
 
-	void Line(sf::Vector2f a, sf::Vector2f b, sf::Color ColorToDraw, sf::Transform Transformation);
+	void Line(sf::Vector2f a, sf::Vector2f b, sf::Color ColorToDraw, sf::Transform Transformation=sf::Transform());
 
-	void Line(sf::Vector2f a, sf::Vector2f b, sf::Color ColorToDraw, float Thickness);
-
-	void Line(sf::Vector2f a, sf::Vector2f b, sf::Color ColorToDraw, float Thickness, sf::Transform Transformation);
+	void Line(sf::Vector2f a, sf::Vector2f b, sf::Color ColorToDraw, float Thickness, sf::Transform Transformation=sf::Transform());
 
 	void Line(sf::Vector2f a, sf::Vector2f b, sf::Color aColorToDraw, sf::Color bColorToDraw, float Thickness);
 	
-	void Rect(sf::Vector2f Position, float Height, float Width, sf::Color ColorToDraw);
-
-	void Rect(sf::Vector2f Position, float Height, float Width, sf::Color ColorToDraw, sf::Transform Transformation);
+	void Rect(sf::Vector2f Position, float Height, float Width, sf::Color ColorToDraw, sf::Transform Transformation=sf::Transform());
 	
-	void circle(sf::Vector2f Position, float Radius, sf::Color Color);
-
-	void circle(sf::Vector2f Position, float Radius, sf::Color Color, sf::Transform Transformation);
+	void circle(sf::Vector2f Position, float Radius, sf::Color Color, sf::Transform Transformation=sf::Transform());
 
 	//==================================
 

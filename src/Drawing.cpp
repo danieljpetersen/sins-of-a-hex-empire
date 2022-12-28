@@ -4,6 +4,7 @@
 #include "Game.h"
 #include <math.h>
 #include <sstream>
+#include <iostream>
 
 Drawing::Drawing()
 {
@@ -14,18 +15,29 @@ void Drawing::init(SFML_Wrapper::CoreApplication *TheApp, Game_System &Game)
 {
 	App = TheApp;
 
-	font.loadFromFile("calibri.ttf");
-    TileTextures.loadFromFile("Tiles.png");
-    UnitTextures.loadFromFile("Units.gif");
+	if (!font.loadFromFile(std::string("calibri.ttf")))
+    {
+	    std::cout << "font not found!" << std::endl;;
+    }
+
+    if (!TileTextures.loadFromFile(std::string("Tiles.png")))
+    {
+        std::cout << "tiles texture not found" << std::endl;
+    }
+    if (!UnitTextures.loadFromFile(std::string("Units.gif")))
+    {
+        std::cout << "Units texture not found" << std::endl;
+
+    }
 
 	VersionNumber.setCharacterSize(12);
 	VersionNumber.setFont(font);
-	VersionNumber.setPosition(0, 0);
+	VersionNumber.setPosition({0.0f, 0.0f});
 	VersionNumber.setString("Version 0.2");
-	VersionNumber.setColor(sf::Color::White);
+	VersionNumber.setFillColor(sf::Color::White);
 
 	TileVertex.clear();
-	TileVertex.setPrimitiveType(sf::Quads);
+	TileVertex.setPrimitiveType(sf::PrimitiveType::Triangles);
 
 	UnitSprites.resize(Game.Board.NUMBER_OF_TILES);
 	for (unsigned int i = 0; i < Game.Board.NUMBER_OF_TILES; i++)
@@ -39,22 +51,9 @@ void Drawing::init(SFML_Wrapper::CoreApplication *TheApp, Game_System &Game)
 
 //==================================
 
-void Drawing::Line(sf::Vector2f a, sf::Vector2f b, sf::Color ColorToDraw)
-{	
-	sf::VertexArray lines(sf::Lines, 2);	
-	lines[0].position = a;
-	lines[0].color = ColorToDraw;
-	lines[1].position = b;
-	lines[1].color = ColorToDraw;
-
-	App->MainWindow.draw(lines);
-}
-
-//==================================/
-
 void Drawing::Line(sf::Vector2f a, sf::Vector2f b, sf::Color ColorToDraw, sf::Transform Transformation)
-{	
-	sf::VertexArray lines(sf::Lines, 2);	
+{
+	sf::VertexArray lines(sf::PrimitiveType::Lines, 2);
 	lines[0].position = a;
 	lines[0].color = ColorToDraw;
 	lines[1].position = b;
@@ -64,136 +63,84 @@ void Drawing::Line(sf::Vector2f a, sf::Vector2f b, sf::Color ColorToDraw, sf::Tr
 }
 
 //==================================
- 
-void Drawing::Line(sf::Vector2f a, sf::Vector2f b, sf::Color ColorToDraw, float Thickness)
-{	
-	sf::Vector2f Normal(a.y - b.y, b.x - a.x);
-	float Length = std::sqrt(Normal.x * Normal.x + Normal.y * Normal.y);
-	if (Length != 0.f)
-		Normal /= Length;
-	
-	Normal = Normal * Thickness;
-	Normal = Normal / 2.0f;
 
-	sf::VertexArray Line(sf::Quads);
-	sf::Vertex Vert[4] =
-	{
-		sf::Vertex(a - Normal, ColorToDraw),
-		sf::Vertex(b - Normal, ColorToDraw),
-		sf::Vertex(b + Normal, ColorToDraw),
-		sf::Vertex(a + Normal, ColorToDraw)
-	};
+void appendQuad(sf::VertexArray &VertexArray, sf::Vertex a, sf::Vertex b, sf::Vertex c, sf::Vertex d)
+{
+    assert(vertexArray.getPrimitiveType() == sf::PrimitiveType::Triangles);
 
-	Line.append(Vert[0]);
-	Line.append(Vert[1]);
-	Line.append(Vert[2]);
-	Line.append(Vert[3]);
+    VertexArray.append(a);
+    VertexArray.append(b);
+    VertexArray.append(d);
 
-	App->MainWindow.draw(Line);
+    VertexArray.append(d);
+    VertexArray.append(b);
+    VertexArray.append(c);
 }
 
 //==================================
- 
+
 void Drawing::Line(sf::Vector2f a, sf::Vector2f b, sf::Color ColorToDraw, float Thickness, sf::Transform Transformation)
 {
-	sf::Vector2f Normal(a.y - b.y, b.x - a.x);
-	float Length = std::sqrt(Normal.x * Normal.x + Normal.y * Normal.y);
-	if (Length != 0.f)
-		Normal /= Length;
-	
-	Normal = Normal * Thickness;
-	Normal = Normal / 2.0f;
+    sf::Vector2f LineNormal(a.y - b.y, b.x - a.x);
+    float LineThickness = std::sqrt(LineNormal.x * LineNormal.x + LineNormal.y * LineNormal.y);
+    if (LineThickness != 0.f)
+        LineNormal /= LineThickness;
 
-	sf::VertexArray Line(sf::Quads);
-	sf::Vertex Vert[4] =
-	{
-		sf::Vertex(a - Normal, ColorToDraw),
-		sf::Vertex(b - Normal, ColorToDraw),
-		sf::Vertex(b + Normal, ColorToDraw),
-		sf::Vertex(a + Normal, ColorToDraw)
-	};
+    LineNormal = LineNormal * Thickness;
+    LineNormal = LineNormal / 2.0f;
 
-	Line.append(Vert[0]);
-	Line.append(Vert[1]);
-	Line.append(Vert[2]);
-	Line.append(Vert[3]);
+    sf::VertexArray VertexArray(sf::PrimitiveType::Triangles);
+    appendQuad(VertexArray,
+               sf::Vertex(a - LineNormal, ColorToDraw),
+               sf::Vertex(a + LineNormal, ColorToDraw),
+               sf::Vertex(b + LineNormal, ColorToDraw),
+               sf::Vertex(b - LineNormal, ColorToDraw));
 
-	App->MainWindow.draw(Line, Transformation);
+	App->MainWindow.draw(VertexArray, Transformation);
 }
 
 //==================================
 
 void Drawing::Line(sf::Vector2f a, sf::Vector2f b, sf::Color aColorToDraw, sf::Color bColorToDraw, float Thickness)
 {
-	sf::Vector2f Normal(a.y - b.y, b.x - a.x);
-	float Length = std::sqrt(Normal.x * Normal.x + Normal.y * Normal.y);
-	if (Length != 0.f)
-		Normal /= Length;
-	
-	Normal = Normal * Thickness;
-	Normal = Normal / 2.0f;
+    sf::Vector2f LineNormal(a.y - b.y, b.x - a.x);
+    float LineThickness = std::sqrt(LineNormal.x * LineNormal.x + LineNormal.y * LineNormal.y);
+    if (LineThickness != 0.f)
+        LineNormal /= LineThickness;
 
-	sf::VertexArray Line(sf::Quads);
-	sf::Vertex Vert[4] =
-	{
-		sf::Vertex(a - Normal, aColorToDraw),
-		sf::Vertex(b - Normal, aColorToDraw),
-		sf::Vertex(b + Normal, bColorToDraw),
-		sf::Vertex(a + Normal, bColorToDraw)
-	};
+    LineNormal = LineNormal * Thickness;
+    LineNormal = LineNormal / 2.0f;
 
-	Line.append(Vert[0]);
-	Line.append(Vert[1]);
-	Line.append(Vert[2]);
-	Line.append(Vert[3]);
+    sf::VertexArray VertexArray(sf::PrimitiveType::Triangles);
+    appendQuad(VertexArray,
+               sf::Vertex(a - LineNormal, aColorToDraw),
+               sf::Vertex(a + LineNormal, aColorToDraw),
+               sf::Vertex(b + LineNormal, bColorToDraw),
+               sf::Vertex(b - LineNormal, bColorToDraw));
 
-	App->MainWindow.draw(Line);
-}
-
-//==================================
- 
-void Drawing::Rect(sf::Vector2f Position, float Height, float Width, sf::Color ColorToDraw)
-{
-	sf::Vertex rect[4] =
-	{
-		sf::Vertex(Position, ColorToDraw),
-		sf::Vertex(sf::Vector2f(Position.x + Width, Position.y), ColorToDraw),
-		sf::Vertex(sf::Vector2f(Position.x + Width, Position.y + Height), ColorToDraw),
-		sf::Vertex(sf::Vector2f(Position.x, Position.y + Height), ColorToDraw)
-	};
-
-	App->MainWindow.draw(rect, 4, sf::Quads);
+	App->MainWindow.draw(VertexArray);
 }
 
 //==================================
 
 void Drawing::Rect(sf::Vector2f Position, float Height, float Width, sf::Color ColorToDraw, sf::Transform Transformation)
 {
-	sf::Vertex rect[4] =
+    sf::Vertex verts[6] =
 	{
 		sf::Vertex(Position, ColorToDraw),
 		sf::Vertex(sf::Vector2f(Position.x + Width, Position.y), ColorToDraw),
 		sf::Vertex(sf::Vector2f(Position.x + Width, Position.y + Height), ColorToDraw),
-		sf::Vertex(sf::Vector2f(Position.x, Position.y + Height), ColorToDraw)
+
+		sf::Vertex(sf::Vector2f(Position.x, Position.y), ColorToDraw),
+		sf::Vertex(sf::Vector2f(Position.x, Position.y + Height), ColorToDraw),
+		sf::Vertex(sf::Vector2f(Position.x + Width, Position.y + Height), ColorToDraw)
 	};
 
-	App->MainWindow.draw(rect, 4, sf::Quads, Transformation);
+	App->MainWindow.draw(verts, 6, sf::PrimitiveType::Triangles, Transformation);
 }
 
 //==================================
- 
-void Drawing::circle(sf::Vector2f Position, float Radius, sf::Color Color)
-{
-	sf::CircleShape Test;
-	Test.setFillColor(Color);
-	Test.setPosition(Position);
-	Test.setRadius(Radius);
-	
-	App->MainWindow.draw(Test);
-}
 
-//==================================
- 
 void Drawing::circle(sf::Vector2f Position, float Radius, sf::Color Color, sf::Transform Transformation)
 {
 	sf::CircleShape Test;
@@ -209,28 +156,35 @@ void Drawing::circle(sf::Vector2f Position, float Radius, sf::Color Color, sf::T
 void Drawing::setupTileVertexArrayPositions(Board_Component &Board)
 {
 	TileVertex.clear();
-	TileVertex.resize(Board.NUMBER_OF_TILES * 4);
+	TileVertex.resize(Board.NUMBER_OF_TILES * 6);
 
 	int Index = 0;
-	for (unsigned int i = 0; i < TileVertex.getVertexCount(); i = i + 4)
+	for (unsigned int i = 0; i < TileVertex.getVertexCount(); i += 6)
 	{
 		sf::Vector2f Position1 = Board.Tiles[Index].getPosition();
 		sf::Vector2f Position2(Position1.x + TILE_WIDTH, Position1.y);
 		sf::Vector2f Position3(Position1.x + TILE_WIDTH, Position1.y + TILE_HEIGHT);
-		sf::Vector2f Position4(Position1.x, Position1.y + TILE_HEIGHT);
-				
-		sf::Vertex Vert[4] = 
+
+		sf::Vector2f Position4(Position1.x, Position1.y);
+		sf::Vector2f Position5(Position1.x, Position1.y + TILE_HEIGHT);
+		sf::Vector2f Position6(Position1.x + TILE_WIDTH, Position1.y + TILE_HEIGHT);
+
+		sf::Vertex Vert[6] =
 		{
 			sf::Vertex(Position1),
 			sf::Vertex(Position2),
 			sf::Vertex(Position3),
-			sf::Vertex(Position4)
+			sf::Vertex(Position4),
+			sf::Vertex(Position5),
+			sf::Vertex(Position6),
 		};
 
 		TileVertex[i].position = Vert[0].position;
 		TileVertex[i + 1].position = Vert[1].position;
 		TileVertex[i + 2].position = Vert[2].position;
 		TileVertex[i + 3].position = Vert[3].position;
+		TileVertex[i + 4].position = Vert[4].position;
+		TileVertex[i + 5].position = Vert[5].position;
 
 		sf::Vector2f SpriteOffset(Position1.x + 10, Position1.y + 4);
 		UnitSprites[Index].setPosition(SpriteOffset);
@@ -258,7 +212,7 @@ void Drawing::drawTiles(Board_Component &Board)
 		for (unsigned int i = 0; i < Board.NUMBER_OF_TILES; i++)
 		{
 			TileIndex = i;
-			VertexIndex = TileIndex * 4;
+			VertexIndex = TileIndex * 6;
 
 			TileType = Board.Tiles[TileIndex].getType();
 			TileOwner = Board.Tiles[TileIndex].getOwner();
@@ -389,12 +343,17 @@ void Drawing::drawTiles(Board_Component &Board)
 			sf::Vector2f TexCoords1(xTopLeft, yTopLeft);
 			sf::Vector2f TexCoords2(xTopLeft + TILE_WIDTH, yTopLeft);
 			sf::Vector2f TexCoords3(xTopLeft + TILE_WIDTH, yTopLeft + TILE_HEIGHT);
-			sf::Vector2f TexCoords4(xTopLeft, yTopLeft + TILE_HEIGHT);
-					
+
+			sf::Vector2f TexCoords4(xTopLeft, yTopLeft);
+			sf::Vector2f TexCoords5(xTopLeft, yTopLeft + TILE_HEIGHT);
+			sf::Vector2f TexCoords6(xTopLeft + TILE_WIDTH, yTopLeft + TILE_HEIGHT);
+
 			TileVertex[VertexIndex].texCoords = TexCoords1;
 			TileVertex[VertexIndex + 1].texCoords = TexCoords2;
 			TileVertex[VertexIndex + 2].texCoords = TexCoords3;
 			TileVertex[VertexIndex + 3].texCoords = TexCoords4;
+			TileVertex[VertexIndex + 4].texCoords = TexCoords5;
+			TileVertex[VertexIndex + 5].texCoords = TexCoords6;
 		}
 	}
 
@@ -675,7 +634,7 @@ void Drawing::debugDrawPaths(Pathfinding &Pathfinder, Board_Component &BoardObje
 	int Cost = 0;
 	sf::Text TextToDraw;
 	TextToDraw.setCharacterSize(14);
-	TextToDraw.setColor(sf::Color(0,0,0));
+	TextToDraw.setFillColor(sf::Color(0,0,0));
 	TextToDraw.setString("0");
 	TextToDraw.setFont(font);
 	

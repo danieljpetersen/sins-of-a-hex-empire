@@ -24,13 +24,9 @@ namespace SFML_Wrapper
 		
 		const int DEFAULT_SCREEN_WIDTH = 800;
 		const int DEFAULT_SCREEN_HEIGHT = 500;
-		//open the window up at either the default width and height, or if that is larger than the users screen, get their screen size and use that
-		MainWindow.create( sf::VideoMode
-								( std::min(sf::VideoMode::getDesktopMode().width, (unsigned)DEFAULT_SCREEN_WIDTH)
-								, std::min(sf::VideoMode::getDesktopMode().height, (unsigned)DEFAULT_SCREEN_HEIGHT)
-								, 32), ProgramTitle, sf::Style::Close, ContextSetter);
+		MainWindow.create(sf::VideoMode({DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT}, 32), ProgramTitle, sf::Style::Close, ContextSetter);
 
-		GameCamera.reset(sf::FloatRect((float)0, (float)0, (float)DEFAULT_SCREEN_WIDTH, (float)DEFAULT_SCREEN_HEIGHT));
+		GameCamera.reset(sf::FloatRect({0.0f, 0.0f}, {(float)DEFAULT_SCREEN_WIDTH, (float)DEFAULT_SCREEN_HEIGHT}));
 		
 		this->updateScreenSizes();
 
